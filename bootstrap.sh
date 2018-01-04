@@ -1,8 +1,8 @@
 #!/bin/sh -e
 
 # Edit the following to change the name of the database user that will be created:
-APP_DB_USER=myapp
-APP_DB_PASS=dbpass
+APP_DB_USER=testuser
+APP_DB_PASS=testuser
 
 # Edit the following to change the name of the database that is created (defaults to the user name)
 APP_DB_NAME=$APP_DB_USER
@@ -85,12 +85,22 @@ cat << EOF | su - postgres -c psql
 -- Create the database user:
 CREATE USER $APP_DB_USER WITH PASSWORD '$APP_DB_PASS';
 
+-- Add roles to $APP_DB_USER
+ALTER ROLE $APP_DB_USER WITH superuser;
+ALTER ROLE $APP_DB_USER WITH createdb;
+ALTER ROLE $APP_DB_USER WITH createrole;
+ALTER ROLE $APP_DB_USER WITH replication;
+
 -- Create the database:
 CREATE DATABASE $APP_DB_NAME WITH OWNER=$APP_DB_USER
                                   LC_COLLATE='en_US.utf8'
                                   LC_CTYPE='en_US.utf8'
                                   ENCODING='UTF8'
                                   TEMPLATE=template0;
+
+-- Change password of postgres user
+ALTER USER postgres WITH PASSWORD 'postgres';
+
 EOF
 
 # Tag the provision time:
